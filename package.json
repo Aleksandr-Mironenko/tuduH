@@ -44,8 +44,8 @@
   },
   "lint-staged": {
   "*.js": [
-    "eslint --fix --concurrent false",
-    "prettier --write --concurrent false"
+    "eslint --fix",
+    "prettier --write"
   ]
 },
   "devDependencies": {
