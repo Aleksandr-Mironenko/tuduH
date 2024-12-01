@@ -92,16 +92,12 @@ export default class App extends Component {
   }
 
   timerplay = (id) => {
-    console.log(id)
     const updatedTodoData = this.state.todoData.map((todo) => (todo.id === id ? { ...todo, timerplay: true } : todo))
-    console.log(updatedTodoData)
     this.setState({ todoData: updatedTodoData })
   }
 
   timerstop = (id) => {
-    console.log(id)
     const updatedTodoData = this.state.todoData.map((todo) => (todo.id === id ? { ...todo, timerplay: false } : todo))
-    console.log(updatedTodoData)
     this.setState({ todoData: updatedTodoData })
   }
 
