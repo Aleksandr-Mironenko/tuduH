@@ -11,8 +11,8 @@ export default class TaskList extends Component {
   }
 
   render() {
-    const { onDeleted, onToggleItems, filteredTasks } = this.props
-    // const { todos } = this.props;
+    const { onDeleted, onToggleItems, filteredTasks, timerstop, timerplay } = this.props
+
     const elements = filteredTasks.map((item) => {
       return (
         <Task
@@ -20,6 +20,8 @@ export default class TaskList extends Component {
           {...item}
           onDeleted={() => onDeleted(item.id)}
           onToggleItems={() => onToggleItems(item.id)}
+          timerstop={timerstop}
+          timerplay={timerplay}
         />
       )
     })

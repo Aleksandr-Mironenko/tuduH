@@ -13,12 +13,27 @@ export default class Main extends Component {
   }
 
   render() {
-    const { onDeleted, onToggleItems, countNotChecked, functionFilter, filteredTasks, clearCompleted, valueTab } =
-      this.props
+    const {
+      onDeleted,
+      onToggleItems,
+      countNotChecked,
+      functionFilter,
+      filteredTasks,
+      clearCompleted,
+      valueTab,
+      timerstop,
+      timerplay,
+    } = this.props
 
     return (
       <section className="main">
-        <TaskList onDeleted={onDeleted} onToggleItems={onToggleItems} filteredTasks={filteredTasks} />
+        <TaskList
+          onDeleted={onDeleted}
+          onToggleItems={onToggleItems}
+          filteredTasks={filteredTasks}
+          timerstop={timerstop}
+          timerplay={timerplay}
+        />
         <Footer
           countNotChecked={countNotChecked}
           functionFilter={functionFilter}
