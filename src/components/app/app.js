@@ -83,10 +83,6 @@ export default class App extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.todoData !== prevState.todoData) {
-      clearInterval(this.timerInterval)
-      clearInterval(this.funcInterval)
-      this.timerInterval = setTimeout(this.timer, 1000)
-      this.funcInterval = setTimeout(this.func, 5000)
       localStorage.setItem('todoData', JSON.stringify(this.state.todoData))
     }
   }
@@ -106,9 +102,9 @@ export default class App extends Component {
       const updatedTodoData = this.state.todoData.map((el) => {
         if (el.timerplay) {
           let secMinHour = el.time.split(':')
-          let seconds = +secMinHour[0]
+          let seconds = +secMinHour[2]
           let minutes = +secMinHour[1]
-          let hours = +secMinHour[2]
+          let hours = +secMinHour[0]
           seconds++
           if (seconds === 60) {
             seconds = 0
@@ -121,7 +117,7 @@ export default class App extends Component {
           let displaySeconds = (seconds < 10 ? '0' : '') + seconds
           let displayMinutes = (minutes < 10 ? '0' : '') + minutes
           let displayHours = (hours < 10 ? '0' : '') + hours
-          return { ...el, time: `${displaySeconds}:${displayMinutes}:${displayHours}` }
+          return { ...el, time: `${displayHours}:${displayMinutes}:${displaySeconds}` }
         }
         return el
       })
@@ -145,6 +141,8 @@ export default class App extends Component {
   }
 
   componentDidMount = () => {
+    this.timerInterval = setInterval(this.timer, 1000)
+    this.funcInterval = setInterval(this.func, 5000)
     if (this.state.todoData.length === 0) {
       const todoData = localStorage.getItem('todoData') ? JSON.parse(localStorage.getItem('todoData')) : []
       this.setState({ todoData: todoData })
