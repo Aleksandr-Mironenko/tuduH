@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import KG from 'date-fns/locale/ru'
+import KG from 'date-fns/locale/en-AU'
 
 import Header from '../header'
 import Main from '../main'
