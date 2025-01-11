@@ -1,38 +1,29 @@
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+import React, { useState } from 'react'
 
-export default class NewTaskForm extends Component {
-  state = {
-    label: '',
+const NewTaskForm = ({ onEnterPressed }) => {
+  const [label, setLabel] = useState('')
+
+  const onChange = (event) => {
+    setLabel(event.target.value)
   }
 
-  static propTypes = {
-    onEnterPressed: PropTypes.func.isRequired,
-  }
-
-  onChange = (event) => {
-    this.setState({ label: event.target.value })
-  }
-
-  addedInput = (event) => {
+  const addedInput = (event) => {
     if (event.key === 'Enter') {
-      this.props.onEnterPressed(this.state.label)
-      this.setState({
-        label: '',
-      })
+      onEnterPressed(label)
+      setLabel('')
     }
   }
 
-  render() {
-    return (
-      <input
-        className="new-todo"
-        autoFocus
-        placeholder="What needs to be done"
-        onKeyDown={this.addedInput}
-        onChange={this.onChange}
-        value={this.state.label}
-      />
-    )
-  }
+  return (
+    <input
+      name="newTask"
+      className="new-todo"
+      autoFocus
+      placeholder="What needs to be done"
+      onKeyDown={addedInput}
+      onChange={onChange}
+      value={label}
+    />
+  )
 }
+export default NewTaskForm

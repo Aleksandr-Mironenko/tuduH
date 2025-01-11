@@ -1,21 +1,20 @@
-import React, { Component } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import KG from 'date-fns/locale/en-AU'
 
 import Header from '../header'
 import Main from '../main'
 
-export default class App extends Component {
-  state = {
-    todoData: [],
-    valueTab: 'all',
-  }
+const App = () => {
+  const [todoData, setTodoData] = useState([])
+  const [valueTab, setValueTab] = useState('all')
+  const uMemoTodoData = useMemo(() => todoData, [todoData])
 
-  createEl = (text) => {
-    this.setState(({ todoData }) => {
-      const newId = (Math.random() * 1000000) ^ 2
-
-      const newTodoItem = {
+  const createEl = (text) => {
+    const newId = (Math.random() * 1000000) ^ 2
+    setTodoData([
+      ...todoData,
+      {
         label: text,
         id: newId,
         isChecked: false,
@@ -24,48 +23,53 @@ export default class App extends Component {
         formatted: 'now',
         time: '00:00:00',
         timerplay: false,
-      }
-
-      return {
-        todoData: [...todoData, newTodoItem],
-      }
-    })
+        edit: false,
+      },
+    ])
   }
 
-  onEnterPressed = (label) => {
-    this.createEl(label)
+  const onToggleItems = (id) => {
+    const idx = todoData.findIndex((el) => el.id === id)
+    const oldItem = todoData[idx]
+    const newItem = {
+      ...oldItem,
+      completed: !oldItem.completed,
+      isChecked: !oldItem.isChecked,
+    }
+    setTodoData([...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)])
   }
 
-  onToggleItems = (id) => {
-    this.setState(({ todoData }) => {
-      const idx = todoData.findIndex((el) => el.id === id)
-      const oldItem = todoData[idx]
-
-      const newItem = {
-        ...oldItem,
-        completed: !oldItem.completed,
-        isChecked: !oldItem.isChecked,
-      }
-
-      const newArray = [...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)]
-
-      return { todoData: newArray }
-    })
+  const onChangeLabel = (id, newLabel) => {
+    const idx = todoData.findIndex((el) => el.id === id)
+    const oldItem = todoData[idx]
+    const newItem = {
+      ...oldItem,
+      label: newLabel,
+    }
+    setTodoData([...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)])
   }
 
-  deleteElement = (id) => {
-    this.setState(({ todoData }) => {
-      const idx = todoData.findIndex((el) => el.id === id)
-      const newtodoData = [...todoData.slice(0, idx), ...todoData.slice(idx + 1)]
-      return { todoData: newtodoData }
-    })
+  const onEdit = (id) => {
+    const idx = todoData.findIndex((el) => el.id === id)
+    const oldItem = todoData[idx]
+    const newItem = {
+      ...oldItem,
+      edit: !oldItem.edit,
+    }
+
+    setTodoData([...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)])
   }
 
-  functionFilter = (tab) => {
-    this.setState({ valueTab: tab })
+  const deleteElement = (id) => {
+    const idx = todoData.findIndex((el) => el.id === id)
+    setTodoData([...todoData.slice(0, idx), ...todoData.slice(idx + 1)])
   }
 
-  filterTasks = (tasks, tab) => {
+  const functionFilter = (tab) => {
+    setValueTab(tab)
+  }
+
+  const filterTasks = (tasks, tab) => {
     if (tab === 'Active') {
       return tasks.filter((task) => !task.completed)
     } else if (tab === 'Completed') {
@@ -74,32 +78,22 @@ export default class App extends Component {
       return tasks
     }
   }
-  clearCompleted = () => {
-    this.setState(({ todoData }) => {
-      const newtodoData = [...todoData.filter((el) => !el.completed)]
-      return { todoData: newtodoData }
-    })
+
+  const clearCompleted = () => {
+    setTodoData([...todoData.filter((el) => !el.completed)])
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.todoData !== prevState.todoData) {
-      localStorage.setItem('todoData', JSON.stringify(this.state.todoData))
-    }
+  const timerplay = (id) => {
+    setTodoData(todoData.map((todo) => (todo.id === id ? { ...todo, timerplay: true } : todo)))
   }
 
-  timerplay = (id) => {
-    const updatedTodoData = this.state.todoData.map((todo) => (todo.id === id ? { ...todo, timerplay: true } : todo))
-    this.setState({ todoData: updatedTodoData })
+  const timerstop = (id) => {
+    setTodoData(todoData.map((todo) => (todo.id === id ? { ...todo, timerplay: false } : todo)))
   }
 
-  timerstop = (id) => {
-    const updatedTodoData = this.state.todoData.map((todo) => (todo.id === id ? { ...todo, timerplay: false } : todo))
-    this.setState({ todoData: updatedTodoData })
-  }
-
-  timer = () => {
-    if (this.state.todoData.length > 0) {
-      const updatedTodoData = this.state.todoData.map((el) => {
+  const timer = () => {
+    if (todoData.length > 0) {
+      const updatedTodoData = todoData.map((el) => {
         if (el.timerplay) {
           let secMinHour = el.time.split(':')
           let seconds = +secMinHour[2]
@@ -122,58 +116,63 @@ export default class App extends Component {
         return el
       })
 
-      this.setState({ todoData: updatedTodoData })
+      setTodoData(updatedTodoData)
     }
   }
 
-  func = () => {
-    this.setState(({ todoData }) => {
-      const newTodoData = todoData.map((el) => ({
-        ...el,
-        formatted: formatDistanceToNow(el.creationDate, {
-          includeSeconds: true,
-          locale: KG,
-          addSuffix: true,
-        }),
-      }))
-      return { todoData: newTodoData }
-    })
+  const func = () => {
+    const newTodoData = todoData.map((el) => ({
+      ...el,
+      formatted: formatDistanceToNow(el.creationDate, {
+        includeSeconds: true,
+        locale: KG,
+        addSuffix: true,
+      }),
+    }))
+    setTodoData(newTodoData)
   }
 
-  componentDidMount = () => {
-    this.timerInterval = setInterval(this.timer, 1000)
-    this.funcInterval = setInterval(this.func, 5000)
-    if (this.state.todoData.length === 0) {
-      const todoData = localStorage.getItem('todoData') ? JSON.parse(localStorage.getItem('todoData')) : []
-      this.setState({ todoData: todoData })
+  const getLocalStorageNullState = () => {
+    if (todoData.length === 0) {
+      setTodoData(localStorage.getItem('todoData') ? JSON.parse(localStorage.getItem('todoData')) : [])
     }
   }
 
-  componentWillUnmount() {
-    clearInterval(this.timerInterval)
-    clearInterval(this.funcInterval)
-  }
-  render() {
-    const { todoData, valueTab } = this.state
-    const count = todoData.length - todoData.filter((el) => el.completed).length
+  useEffect(() => {
+    const timerInterval = setInterval(timer, 1000)
+    const funcInterval = setInterval(func, 5000)
+    getLocalStorageNullState()
+    return () => {
+      clearInterval(timerInterval)
+      clearInterval(funcInterval)
+    }
+  }, [timer, func])
 
-    const filteredTasks = this.filterTasks(todoData, valueTab)
+  useEffect(() => {
+    localStorage.setItem('todoData', JSON.stringify(uMemoTodoData))
+  }, [todoData])
 
-    return (
-      <section className="todoapp">
-        <Header onEnterPressed={this.onEnterPressed} />
-        <Main
-          onDeleted={this.deleteElement}
-          onToggleItems={this.onToggleItems}
-          countNotChecked={count}
-          functionFilter={this.functionFilter}
-          filteredTasks={filteredTasks}
-          clearCompleted={this.clearCompleted}
-          valueTab={valueTab}
-          timerstop={this.timerstop}
-          timerplay={this.timerplay}
-        />
-      </section>
-    )
-  }
+  const count = todoData.length - todoData.filter((el) => el.completed).length
+
+  const filteredTasks = filterTasks(todoData, valueTab)
+
+  return (
+    <section className="todoapp">
+      <Header onEnterPressed={createEl} />
+      <Main
+        onEdit={onEdit}
+        onDeleted={deleteElement}
+        onToggleItems={onToggleItems}
+        countNotChecked={count}
+        functionFilter={functionFilter}
+        filteredTasks={filteredTasks}
+        clearCompleted={clearCompleted}
+        valueTab={valueTab}
+        timerstop={timerstop}
+        timerplay={timerplay}
+        onChangeLabel={onChangeLabel}
+      />
+    </section>
+  )
 }
+export default App
