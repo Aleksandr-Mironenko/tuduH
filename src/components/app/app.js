@@ -91,72 +91,86 @@ const App = () => {
     setTodoData(todoData.map((todo) => (todo.id === id ? { ...todo, timerplay: false } : todo)))
   }
 
-  const timer = () => {
-  
-     setTodoData(prev => {
-
-    if (prev.length > 0) {
-          const updatedTodoData = prev.map((el) => {
-            if (el.timerplay) {
-              let secMinHour = el.time.split(':')
-              let seconds = +secMinHour[2]
-              let minutes = +secMinHour[1]
-              let hours = +secMinHour[0]
-              seconds++
-              if (seconds === 60) {
-                seconds = 0
-                ++minutes
-                if (minutes === 60) {
-                  minutes = 0
-                  ++hours
-                }
-              }
-              let displaySeconds = (seconds < 10 ? '0' : '') + seconds
-              let displayMinutes = (minutes < 10 ? '0' : '') + minutes
-              let displayHours = (hours < 10 ? '0' : '') + hours
-              return { ...el, time: ${displayHours}:${displayMinutes}:${displaySeconds} }
-            }
-            return el
-          })
-    
-        return updatedTodoData
-        }
-    return prev
-    
-        
-})
-
-  const func = () => {
-    const newTodoData = todoData.map((el) => ({
-      ...el,
-      formatted: formatDistanceToNow(el.creationDate, {
-        includeSeconds: true,
-        locale: KG,
-        addSuffix: true,
-      }),
-    }))
-    setTodoData(newTodoData)
-  }
-
   const getLocalStorageNullState = () => {
-    if (todoData.length === 0) {
+    if (uMemoTodoData.length === 0) {
       setTodoData(localStorage.getItem('todoData') ? JSON.parse(localStorage.getItem('todoData')) : [])
     }
   }
 
+  const timer = () => {
+    if (todoData.length > 0) {
+      const updatedTodoData = todoData.map((el) => {
+        if (el.timerplay) {
+          let secMinHour = el.time.split(':')
+          let seconds = +secMinHour[2]
+          let minutes = +secMinHour[1]
+          let hours = +secMinHour[0]
+          seconds++
+          if (seconds === 60) {
+            seconds = 0
+            ++minutes
+            if (minutes === 60) {
+              minutes = 0
+              ++hours
+            }
+          }
+          let displaySeconds = (seconds < 10 ? '0' : '') + seconds
+          let displayMinutes = (minutes < 10 ? '0' : '') + minutes
+          let displayHours = (hours < 10 ? '0' : '') + hours
+          return { ...el, time: `${displayHours}:${displayMinutes}:${displaySeconds}` }
+        }
+        return el
+      })
+
+      setTodoData(updatedTodoData)
+    }
+  }
+
+  const func = () => {
+    console.log('func,')
+    if (todoData.length > 0) {
+      const newTodoData = todoData.map((el) => ({
+        ...el,
+        formatted: formatDistanceToNow(el.creationDate, {
+          includeSeconds: true,
+          locale: KG,
+          addSuffix: true,
+        }),
+      }))
+      setTodoData(newTodoData)
+    }
+  }
+
   useEffect(() => {
-    const timerInterval = setInterval(timer, 1000)
-    const funcInterval = setInterval(func, 5000)
-    getLocalStorageNullState()
+    const timerInterval = setInterval(() => {
+      timer()
+    }, 1000)
+    func()
+
     return () => {
       clearInterval(timerInterval)
-      clearInterval(funcInterval)
     }
-  }, [timer, func])
+  }, [timer])
+
+  //
+  //
+  //
+  // useEffect(() => {
+  //   const timerInterval = setInterval(func, 5000)
+
+  //   return () => {
+  //     clearInterval(timerInterval)
+  //   }
+  // }, [timer])
+  //
+  //
+  useEffect(() => {
+    getLocalStorageNullState()
+  }, [uMemoTodoData])
 
   useEffect(() => {
     localStorage.setItem('todoData', JSON.stringify(uMemoTodoData))
-  }, [todoData])
+  }, [uMemoTodoData])
 
   const count = todoData.length - todoData.filter((el) => el.completed).length
 
@@ -182,3 +196,4 @@ const App = () => {
   )
 }
 export default App
+
