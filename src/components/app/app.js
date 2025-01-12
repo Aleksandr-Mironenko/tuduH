@@ -92,33 +92,39 @@ const App = () => {
   }
 
   const timer = () => {
-    if (todoData.length > 0) {
-      const updatedTodoData = todoData.map((el) => {
-        if (el.timerplay) {
-          let secMinHour = el.time.split(':')
-          let seconds = +secMinHour[2]
-          let minutes = +secMinHour[1]
-          let hours = +secMinHour[0]
-          seconds++
-          if (seconds === 60) {
-            seconds = 0
-            ++minutes
-            if (minutes === 60) {
-              minutes = 0
-              ++hours
-            }
-          }
-          let displaySeconds = (seconds < 10 ? '0' : '') + seconds
-          let displayMinutes = (minutes < 10 ? '0' : '') + minutes
-          let displayHours = (hours < 10 ? '0' : '') + hours
-          return { ...el, time: `${displayHours}:${displayMinutes}:${displaySeconds}` }
-        }
-        return el
-      })
+  
+     setTodoData(prev => {
 
-      setTodoData(updatedTodoData)
-    }
-  }
+    if (prev.length > 0) {
+          const updatedTodoData = prev.map((el) => {
+            if (el.timerplay) {
+              let secMinHour = el.time.split(':')
+              let seconds = +secMinHour[2]
+              let minutes = +secMinHour[1]
+              let hours = +secMinHour[0]
+              seconds++
+              if (seconds === 60) {
+                seconds = 0
+                ++minutes
+                if (minutes === 60) {
+                  minutes = 0
+                  ++hours
+                }
+              }
+              let displaySeconds = (seconds < 10 ? '0' : '') + seconds
+              let displayMinutes = (minutes < 10 ? '0' : '') + minutes
+              let displayHours = (hours < 10 ? '0' : '') + hours
+              return { ...el, time: ${displayHours}:${displayMinutes}:${displaySeconds} }
+            }
+            return el
+          })
+    
+        return updatedTodoData
+        }
+    return prev
+    
+        
+})
 
   const func = () => {
     const newTodoData = todoData.map((el) => ({
