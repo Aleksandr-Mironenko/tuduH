@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import KG from 'date-fns/locale/en-AU'
 
@@ -8,7 +8,6 @@ import Main from '../main'
 const App = () => {
   const [todoData, setTodoData] = useState([])
   const [valueTab, setValueTab] = useState('all')
-  const uMemoTodoData = useMemo(() => todoData, [todoData])
 
   const createEl = (text) => {
     const newId = (Math.random() * 1000000) ^ 2
@@ -29,35 +28,19 @@ const App = () => {
   }
 
   const onToggleItems = (id) => {
-    const idx = todoData.findIndex((el) => el.id === id)
-    const oldItem = todoData[idx]
-    const newItem = {
-      ...oldItem,
-      completed: !oldItem.completed,
-      isChecked: !oldItem.isChecked,
-    }
-    setTodoData([...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)])
+    setTodoData(
+      todoData.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed, isChecked: !todo.isChecked } : todo
+      )
+    )
   }
 
   const onChangeLabel = (id, newLabel) => {
-    const idx = todoData.findIndex((el) => el.id === id)
-    const oldItem = todoData[idx]
-    const newItem = {
-      ...oldItem,
-      label: newLabel,
-    }
-    setTodoData([...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)])
+    setTodoData(todoData.map((todo) => (todo.id === id ? { ...todo, label: newLabel } : todo)))
   }
 
   const onEdit = (id) => {
-    const idx = todoData.findIndex((el) => el.id === id)
-    const oldItem = todoData[idx]
-    const newItem = {
-      ...oldItem,
-      edit: !oldItem.edit,
-    }
-
-    setTodoData([...todoData.slice(0, idx), newItem, ...todoData.slice(idx + 1)])
+    setTodoData(todoData.map((todo) => (todo.id === id ? { ...todo, edit: !todo.edit } : todo)))
   }
 
   const deleteElement = (id) => {
@@ -91,51 +74,36 @@ const App = () => {
     setTodoData(todoData.map((todo) => (todo.id === id ? { ...todo, timerplay: false } : todo)))
   }
 
-  const getLocalStorageNullState = () => {
-    if (uMemoTodoData.length === 0) {
-      setTodoData(localStorage.getItem('todoData') ? JSON.parse(localStorage.getItem('todoData')) : [])
-    }
+  const timer = () => {
+    setTodoData((prev) => {
+      return prev.map((el) => {
+        if (el.timerplay) {
+          let secMinHour = el.time.split(':')
+          let seconds = +secMinHour[2]
+          let minutes = +secMinHour[1]
+          let hours = +secMinHour[0]
+          seconds++
+          if (seconds === 60) {
+            seconds = 0
+            ++minutes
+            if (minutes === 60) {
+              minutes = 0
+              ++hours
+            }
+          }
+          let displaySeconds = (seconds < 10 ? '0' : '') + seconds
+          let displayMinutes = (minutes < 10 ? '0' : '') + minutes
+          let displayHours = (hours < 10 ? '0' : '') + hours
+          return { ...el, time: `${displayHours}:${displayMinutes}:${displaySeconds}` }
+        }
+        return el
+      })
+    })
   }
 
-const timer = () => {
-  
-     setTodoData(prev => {
-
-    if (prev.length > 0) {
-          const updatedTodoData = prev.map((el) => {
-            if (el.timerplay) {
-              let secMinHour = el.time.split(':')
-              let seconds = +secMinHour[2]
-              let minutes = +secMinHour[1]
-              let hours = +secMinHour[0]
-              seconds++
-              if (seconds === 60) {
-                seconds = 0
-                ++minutes
-                if (minutes === 60) {
-                  minutes = 0
-                  ++hours
-                }
-              }
-              let displaySeconds = (seconds < 10 ? '0' : '') + seconds
-              let displayMinutes = (minutes < 10 ? '0' : '') + minutes
-              let displayHours = (hours < 10 ? '0' : '') + hours
-              return { ...el, time: ${displayHours}:${displayMinutes}:${displaySeconds} }
-            }
-            return el
-          })
-    
-        return updatedTodoData
-        }
-    return prev
-    
-        
-})
-
   const func = () => {
-    console.log('func,')
-    if (todoData.length > 0) {
-      const newTodoData = todoData.map((el) => ({
+    setTodoData((prev) => {
+      return prev.map((el) => ({
         ...el,
         formatted: formatDistanceToNow(el.creationDate, {
           includeSeconds: true,
@@ -143,42 +111,29 @@ const timer = () => {
           addSuffix: true,
         }),
       }))
-      setTodoData(newTodoData)
-    }
+    })
   }
 
-   useEffect(() => {
-    const timerInterval = setInterval(() => {
-      timer()
-    }, 1000)
-    const funcInterval = setInterval(() => {
-      func()
-    }, 5000)
+  useEffect(() => {
+    const timerInterval = setInterval(timer, 1000)
+
     return () => {
       clearInterval(timerInterval)
-      clearInterval(funcInterval)
     }
-  }, [timer])
-
-  //
-  //
-  //
-  // useEffect(() => {
-  //   const timerInterval = setInterval(func, 5000)
-
-  //   return () => {
-  //     clearInterval(timerInterval)
-  //   }
-  // }, [timer])
-  //
-  //
-  useEffect(() => {
-    getLocalStorageNullState()
-  }, [uMemoTodoData])
+  }, [todoData])
 
   useEffect(() => {
-    localStorage.setItem('todoData', JSON.stringify(uMemoTodoData))
-  }, [uMemoTodoData])
+    const funcInterval = setInterval(func, 5000)
+    return () => clearInterval(funcInterval)
+  }, [])
+
+  useEffect(() => {
+    setTodoData(localStorage.getItem('todoData') ? JSON.parse(localStorage.getItem('todoData')) : [])
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('todoData', JSON.stringify(todoData))
+  }, [todoData])
 
   const count = todoData.length - todoData.filter((el) => el.completed).length
 
@@ -204,4 +159,3 @@ const timer = () => {
   )
 }
 export default App
-
