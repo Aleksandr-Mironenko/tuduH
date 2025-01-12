@@ -147,14 +147,16 @@ const timer = () => {
     }
   }
 
-  useEffect(() => {
+   useEffect(() => {
     const timerInterval = setInterval(() => {
       timer()
     }, 1000)
-    func()
-
+    const funcInterval = setInterval(() => {
+      func()
+    }, 5000)
     return () => {
       clearInterval(timerInterval)
+      clearInterval(funcInterval)
     }
   }, [timer])
 
